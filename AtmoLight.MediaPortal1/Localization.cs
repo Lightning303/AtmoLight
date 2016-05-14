@@ -120,7 +120,7 @@ namespace AtmoLight
       }
     }
 
-    public static void Load(string languageFileLocation)
+    public static void Load(string languageFile)
     {
       try
       {
@@ -129,7 +129,7 @@ namespace AtmoLight
           Init();
         }
 
-        xmlFile.Load(languageFileLocation);
+        xmlFile.Load(languageFile);
       }
       catch (Exception e)
       {
@@ -144,49 +144,35 @@ namespace AtmoLight
       try
       {
 
-        if (string.IsNullOrEmpty(Settings.currentLanguageFileLocation))
+        if (string.IsNullOrEmpty(Settings.currentLanguageFile))
         {
           Settings.LoadSettings();
         }
 
-        string mediaportalLanguageDir =
-          MediaPortal.Configuration.Config.GetFolder(MediaPortal.Configuration.Config.Dir.Language);
-
-        if (string.IsNullOrEmpty(mediaportalLanguageDir) || !Directory.Exists(mediaportalLanguageDir))
-        {
-          mediaportalLanguageDir = @"C:\ProgramData\Team MediaPortal\MediaPortal\Language";
-        }
-
-        string fallbackFilename =
-          Path.Combine(mediaportalLanguageDir, "\\AtmoLight\\en.xml");
-
         xmlFile = new XmlDocument();
         xmlFileFallback = new XmlDocument();
 
-        if (File.Exists(Settings.currentLanguageFileLocation))
+        if (File.Exists(Settings.currentLanguageFile))
         {
-          xmlFile.Load(Settings.currentLanguageFileLocation);
+          xmlFile.Load(Settings.currentLanguageFile);
         }
         else
         {
-          Log.Error(String.Format("Language file {0} doesn't exist: ", Settings.currentLanguageFileLocation));
-          Log.Error("Mediaportal configuration language location: " + MediaPortal.Configuration.Config.GetFolder(MediaPortal.Configuration.Config.Dir.Language));
+          Log.Error(String.Format("Language file {0} doesn't exist: ", Settings.currentLanguageFile));
         }
 
-        try
+        if (
+          File.Exists(Settings.currentLanguageFile.Substring(0, Settings.currentLanguageFile.LastIndexOf("\\") + 1) +
+                      "en.xml"))
         {
-          if (
-            File.Exists(fallbackFilename))
-          {
-            xmlFileFallback.Load(fallbackFilename);
-          }
-          else
-          {
-            Log.Error(String.Format("Fallback language file {0} doesn't exist: ", fallbackFilename));
-            Log.Error("Mediaportal configuration language location: " + MediaPortal.Configuration.Config.GetFolder(MediaPortal.Configuration.Config.Dir.Language));
-          }
+          xmlFileFallback.Load(
+            Settings.currentLanguageFile.Substring(0, Settings.currentLanguageFile.LastIndexOf("\\") + 1) + "en.xml");
         }
-        catch (Exception){
+        else
+        {
+          Log.Error(
+            String.Format("Language file {0} doesn't exist: ",
+              Settings.currentLanguageFile.Substring(0, Settings.currentLanguageFile.LastIndexOf("\\") + 1) + "en.xml"));
         }
       }
       catch (Exception e)

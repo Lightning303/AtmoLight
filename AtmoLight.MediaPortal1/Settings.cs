@@ -45,9 +45,7 @@ namespace AtmoLight
     public static int vuMeterMindB;
     public static double vuMeterMinHue;
     public static double vuMeterMaxHue;
-    public static string currentLanguage;
-    public static string currentLanguageFileLegacy;
-    public static string currentLanguageFileLocation;
+    public static string currentLanguageFile;
     public static bool blackbarDetectionHorizontal;
     public static bool blackbarDetectionVertical;
     public static bool blackbarDetectionLinkAreas;
@@ -214,62 +212,28 @@ namespace AtmoLight
           effectMPExit = (ContentEffect)Enum.Parse(typeof(ContentEffect), reader.GetValueAsString("atmolight", "effectMPExit", "LEDsDisabled"));
         }
 
-        currentLanguage = reader.GetValueAsString("atmolight", "currentLanguage", "English");
-        
-        // Check for presence of legacy file location (1.7.0.5 or lower)
-        currentLanguageFileLegacy = reader.GetValueAsString("atmolight", "currentLanguageFile", "");
-
-        if (!string.IsNullOrEmpty(currentLanguageFileLegacy))
+        currentLanguageFile = reader.GetValueAsString("atmolight", "CurrentLanguageFile", currentLanguageFile = Path.Combine(MediaPortal.Configuration.Config.GetFolder(MediaPortal.Configuration.Config.Dir.Language), @"\AtmoLight\en.xml"));
+        if (currentLanguageFile.Substring(currentLanguageFile.Length - 3, 3).ToLower() == "lng")
         {
-          if (currentLanguageFileLegacy.Contains("nl.xml"))
-          {
-            currentLanguage = "Dutch";
-          }
-          else if (currentLanguageFileLegacy.Contains("en.xml"))
-          {
-            currentLanguage = "English";
-          }
-          else if (currentLanguageFileLegacy.Contains("fr.xml"))
-          {
-            currentLanguage = "French";
-          }
-          else if (currentLanguageFileLegacy.Contains("de.xml"))
-          {;
-            currentLanguage = "German";
-          }
-        }
+          int lastBackslash = currentLanguageFile.LastIndexOf("\\") + 1;
+          int lastDot = currentLanguageFile.LastIndexOf(".");
 
-        string mediaportalLanguageDir =
-          MediaPortal.Configuration.Config.GetFolder(MediaPortal.Configuration.Config.Dir.Language) + "\\";
-
-        if (string.IsNullOrEmpty(mediaportalLanguageDir) || !Directory.Exists(mediaportalLanguageDir))
-        {
-          mediaportalLanguageDir = @"C:\ProgramData\Team MediaPortal\MediaPortal\Language\";
-        }
-
-        try
-        {
-          switch (currentLanguage)
+          switch (currentLanguageFile.Substring(lastBackslash, lastDot - lastBackslash))
           {
-            case "Dutch":
-              currentLanguageFileLocation = mediaportalLanguageDir + "\\AtmoLight\\nl.xml";
+            case "GermanDE":
+              currentLanguageFile = Path.Combine(MediaPortal.Configuration.Config.GetFolder(MediaPortal.Configuration.Config.Dir.Language), @"\AtmoLight\de.xml");
               break;
-            case "English":
-              currentLanguageFileLocation = mediaportalLanguageDir + "\\AtmoLight\\en.xml";
+            case "DutchNL":
+              currentLanguageFile = Path.Combine(MediaPortal.Configuration.Config.GetFolder(MediaPortal.Configuration.Config.Dir.Language), @"\AtmoLight\nl.xml");
               break;
-            case "French":
-              currentLanguageFileLocation = mediaportalLanguageDir + "\\AtmoLight\\fr.xml";
+            case "FrenchFR":
+              currentLanguageFile = Path.Combine(MediaPortal.Configuration.Config.GetFolder(MediaPortal.Configuration.Config.Dir.Language), @"\AtmoLight\fr.xml");
               break;
-            case "German":
-              currentLanguageFileLocation = mediaportalLanguageDir + "\\AtmoLight\\de.xml";
+            default:
+            case "EnglishUS":
+              currentLanguageFile = Path.Combine(MediaPortal.Configuration.Config.GetFolder(MediaPortal.Configuration.Config.Dir.Language), @"\AtmoLight\en.xml");
               break;
           }
-        }
-        catch (Exception ex)
-        {
-          Log.Error("Error during LoadSettings");
-          Log.Error(ex.Message);
-          throw;
         }
 
         // Normal settings loading
@@ -416,8 +380,7 @@ namespace AtmoLight
         reader.SetValue("atmolight", "atmoWakeHelperReinitializationDelay", atmoWakeHelperReinitializationDelay);
         reader.SetValue("atmolight", "excludeTimeStart", excludeTimeStart.ToString("HH:mm"));
         reader.SetValue("atmolight", "excludeTimeEnd", excludeTimeEnd.ToString("HH:mm"));
-        reader.SetValue("atmolight", "currentLanguage", currentLanguage);
-        reader.RemoveEntry("atmolight", "currentLanguageFile");
+        reader.SetValue("atmolight", "CurrentLanguageFile", currentLanguageFile);
         reader.SetValue("atmolight", "StaticColorRed", staticColorRed);
         reader.SetValue("atmolight", "StaticColorGreen", staticColorGreen);
         reader.SetValue("atmolight", "StaticColorBlue", staticColorBlue);
